@@ -4,7 +4,7 @@ Bookkeeping directory for the HSCP analysis productions (CMS, 2024 data, IPHC St
 The ROOT files produced by the CRAB jobs stay on the Strasbourg dCache; this directory holds
 what is needed to use them:
 
-- **file lists** (`.txt`, one XRootD URL per line) for the data, MC and signal productions,
+- **file lists** (`.txt`, one XRootD URL per line) for the data and background productions,
   which are read remotely;
 - **local copies** of the signal productions, merged into one ROOT file per mass point;
 - the **scripts** that produce both.
@@ -26,33 +26,28 @@ Sections:
 
 ---
 
-## Disclaimer
-
-I wrote all the code in this project myself. However, this README and the comments in the scripts were generated using Claude.
-
-
 ## 1. What is in the directory
 
 ### Scripts
 
-| File                     | Role                                                                       |
-|--------------------------|----------------------------------------------------------------------------|
-| `write_givenfile_txt.py` | Lists one dCache directory and appends its content to a `.txt`             |
-| `ScriptWrite.sh`         | Calls `write_givenfile_txt.py` for each production; record of every `.txt` |
-| `getjobsSignal.py`       | Copies all signal samples of a code version to `SIGNAL/V<version>/`        |
-| `MergeJobs.py`           | Merges the copied ROOT files with `hadd` (modes `signal` and `data`)       |
-| `transfer_prod.py`       | Older transfer script for data/background (Run 2 dataset names)            |
+| File                     | Role                                                                  |
+|--------------------------|-----------------------------------------------------------------------|
+| `WriteFileinTXT.py` | Lists one dCache directory and appends its content to a `.txt`        |
+| `ScriptWrite.sh`         | Calls `WriteFileinTXT.py` for each production; record of every `.txt` |
+| `getjobsSignal.py`       | Copies all signal samples of a code version to `SIGNAL/V<version>/`   |
+| `MergeJobs.py`           | Merges the copied ROOT files with `hadd` (modes `signal` and `data`)  |
+| `transfer_prod.py`       | Older transfer script for data/background (Run 2 dataset names)       |
 
 ### Sub-directories
 
-| Directory     | Content                                                                                         |
-|---------------|-------------------------------------------------------------------------------------------------|
-| `Mu2024/`     | File lists, Muon0 + Muon1 2024 data                                                             |
-| `MuonEG2024/` | File lists, MuonEG 2024 data                                                                    |
-| `JetMET2024/` | File lists, JetMET0 + JetMET1 2024 data                                                         |
+| Directory     | Content                                                                  |
+|---------------|--------------------------------------------------------------------------|
+| `Mu2024/`     | File lists, Muon0 + Muon1 2024 data                                      |
+| `MuonEG2024/` | File lists, MuonEG 2024 data                                             |
+| `JetMET2024/` | File lists, JetMET0 + JetMET1 2024 data                                  |
 | `BKG/`        | File lists, simulated backgrounds, in `QCD2024/`, `Wjets2024/`, `TTbar2024/`, `TTbar1L1Nu2024/` |
-| `SIGNAL/`     | Local signal productions (per-job and merged files), plus older merged files                    |
-| `AOD2024/`    | Not filled by any script here and absent from `ScriptWrite.sh` (description to be added)        |
+| `SIGNAL/`     | Local signal productions (per-job and merged files), plus older merged files |
+| `AOD2024/`    | Not filled by any script here and absent from `ScriptWrite.sh` |
 
 The `.txt` files and the signal productions are detailed in section 7.
 
@@ -102,12 +97,12 @@ Goal: one `.txt` containing the XRootD URL of every file of a production, to rea
 the same `.txt`:
 
     # TTbar 1L1NU 2024
-    python3 write_givenfile_txt.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0000" BKG/TTbar1L1Nu2024/V22p0.txt
-    python3 write_givenfile_txt.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0001" BKG/TTbar1L1Nu2024/V22p0.txt
-    python3 write_givenfile_txt.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0002" BKG/TTbar1L1Nu2024/V22p0.txt
+    python3 WriteFileinTXT.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0000" BKG/TTbar1L1Nu2024/V22p0.txt
+    python3 WriteFileinTXT.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0001" BKG/TTbar1L1Nu2024/V22p0.txt
+    python3 WriteFileinTXT.py "gfal-ls davs://sbgdcache.in2p3.fr/cms/phedex//store/user/gcoulon/HSCP/TTtoLNu2Q_TuneCP5_13p6TeV_powheg-pythia8/Analysis_TTtoLNu2Q_CodeV22p0/260721_185412/0002" BKG/TTbar1L1Nu2024/V22p0.txt
 
-- The first argument is the whole `gfal-ls` command in quotes. It must start with exactly
-  `gfal-ls davs` (one space): the script cuts these 12 characters to build the `root://` URL.
+- The first argument is the whole command in quotes, of the form `gfal-ls davs://...`. The
+  script runs it and writes the same paths with `root://` instead of `davs://`.
 - To put several datasets in one list (e.g. Muon0 and Muon1 of the same era), give them the
   same `.txt`.
 - `.txt` naming used so far: `V<code version><index>.txt`, the index numbering the eras or
@@ -128,11 +123,12 @@ regenerating it (the script appends, it never overwrites):
     voms-proxy-init --voms cms
     bash ScriptWrite.sh
 
-**Step 6. Check the result:**
+**Step 6. Check the result.** Each line of `ScriptWrite.sh` must answer
+`Writing <n> line(s) to file: ...`. An `ERROR:` means that this directory was not listed and
+that nothing was written for it (see section 9). Then:
 
     wc -l BKG/TTbar1L1Nu2024/V22p0.txt                 # number of files
-    grep -v '\.root$' BKG/TTbar1L1Nu2024/V22p0.txt     # must print nothing
-    sort BKG/TTbar1L1Nu2024/V22p0.txt | uniq -d        # must print nothing
+    sort BKG/TTbar1L1Nu2024/V22p0.txt | uniq -d        # must print nothing (no duplicate)
 
 Each line looks like:
 
@@ -152,14 +148,16 @@ Goal: `SIGNAL/V<version>/<sample>_merged.root`, one file per mass point.
     voms-proxy-init --voms cms
     python3 getjobsSignal.py 21p0
 
-Every dCache dataset whose name contains `HSCP` is scanned, and every task whose name
-contains the version string is copied to:
+Every dCache dataset whose name contains `HSCP` is scanned, and every task of that version
+(exact match: `19p6` does not take `CodeV19p60`) is copied to:
 
     SIGNAL/V21p0/<Model>_<Par-M-mass>_<YYMMDD_HHMMSS>/output_N.root
     e.g. SIGNAL/V21p0/HSCP-Stop_Par-M-1000_260717_081327/output_1.root
 
-**Step 2. Check the transfer.** A listing or a copy that fails only prints a message and the
-script goes on, so compare with what is expected:
+**Step 2. Check the transfer.** The last lines must read
+`Done: <n> block(s) copied to ..., 0 failure(s).` A listing or a copy that failed is listed
+as `FAILED:` and the exit code is 1; in that case delete the sub-directories concerned and
+rerun the command. Then compare with what is expected:
 
     ls SIGNAL/V21p0            # one sub-directory per mass point
     ls SIGNAL/V21p0/*/ | head  # output_N.root files inside
@@ -207,13 +205,20 @@ Run 2 dataset names.
 | `signal`        | every dataset containing `HSCP` (old layout, use section 4 instead) |
 
 The 2024 datasets (`Muon0`, `JetMET0`, `MuonEG`, `QCD_...`, ...) are not in the list. To
-transfer one, add an `elif` branch at the bottom of the script with its dCache path. Any
-other `<dataType>` does nothing and prints nothing.
+transfer one, add a line to the `DATASETS` dictionary at the top of the script. An unknown
+`<dataType>` stops with the list of the known ones.
 
 Output, with `<f1>` and `<f2>` the 2nd and 3rd `_`-separated fields of the task name:
 
     <f1>/<f1>_<f2>/<files>.root
     e.g. task Analysis_SingleMuon_Run2018A_CodeV... -> SingleMuon/SingleMuon_Run2018A/
+
+If a task was submitted more than once (several `<YYMMDD_HHMMSS>` directories on dCache),
+each submission goes to its own directory `<f1>/<f1>_<f2>_<YYMMDD_HHMMSS>/` and a `WARNING`
+is printed. Remove the one you do not want before merging.
+
+The last lines must read `Done: <n> block(s) copied, 0 failure(s).` A listing or a copy that
+failed is listed as `FAILED:` and the exit code is 1.
 
 **Step 2. Merge**, giving the absolute path of the dataset directory:
 
@@ -232,21 +237,22 @@ in the `MODES` dictionary at the top of `MergeJobs.py`.
 
 ## 6. Script reference
 
-### write_givenfile_txt.py
+### WriteFileinTXT.py
 
-    python3 write_givenfile_txt.py "<gfal-ls command>" <output.txt>
+    python3 WriteFileinTXT.py "<gfal-ls command>" <output.txt>
 
 - **Input**: `<gfal-ls command>`, a `gfal-ls davs://...` on one `000N` directory, in quotes;
   `<output.txt>`, the list to fill (its directory must exist).
-- **Output**: one line `root://<same path>/<entry>` appended to `<output.txt>` for each entry
-  returned by `gfal-ls`.
+- **Output**: one line `root://<same path>/<file>.root` appended to `<output.txt>` for each
+  `.root` file returned by `gfal-ls`. Exit code 0 if lines were written, 1 otherwise.
 
 Behaviour to know:
 
 - It appends: running the same command twice duplicates the lines.
-- It does not filter: everything `gfal-ls` returns is written, including a sub-directory
-  such as `log/` if there is one.
-- If `gfal-ls` fails (expired proxy, wrong path), one bogus line ending with `/` is appended.
+- Entries that are not `.root` files (a `log/` sub-directory for instance) are skipped and
+  printed as `Skipped`.
+- If `gfal-ls` fails (expired proxy, wrong path) or finds no `.root` file, nothing is
+  written and an `ERROR:` is printed.
 
 ### ScriptWrite.sh
 
@@ -264,14 +270,17 @@ Currently uncommented: the `BKG/TTbar1L1Nu2024/V22p0.txt` block.
 
 - **Input**: `<version>`, the code version without the `V` (e.g. `21p0`).
 - **Output**:
-  `/scratch/ui3_1/gcoulon/HSCP_prod/SIGNAL/V<version>/<Model>_<Par-M-mass>_<YYMMDD_HHMMSS>/output_N.root`
+  `/scratch/ui3_1/gcoulon/HSCP_prod/SIGNAL/V<version>/<Model>_<Par-M-mass>_<YYMMDD_HHMMSS>/output_N.root`.
+  Exit code 0 if something was copied and nothing failed, 1 otherwise.
 
 Behaviour to know:
 
 - `<Model>_<Par-M-mass>` is the first two `_`-separated fields of the dCache dataset name.
 - All `000N` blocks of a task are copied into the same sub-directory.
 - All signal samples of that version are taken; there is no option to select one model.
-- `<version>` is matched as a substring of the task name: `19p6` also matches `CodeV19p60`.
+- A task is selected when its name contains exactly `V<version>`: `19p6` takes `CodeV19p6`
+  but not `CodeV19p60`. Tasks of a longer version are printed as `Ignored (other version)`.
+- A summary is printed at the end, with every listing or copy that failed as `FAILED:`.
 - `gfal-copy` is called without `--force`: files already present locally are not overwritten.
 
 ### MergeJobs.py
@@ -307,13 +316,18 @@ Behaviour to know:
   - data/background: `<f1>/<f1>_<f2>/`
   - `signal`: `SIGNAL/V<version>/<Par-M-mass>_V<version>/<Par-M-mass>_CodeV<version>/`
 
+  Exit code 0 if something was copied and nothing failed, 1 otherwise.
+
 Behaviour to know:
 
-- The `signal` layout is the old one, not the one `MergeJobs.py signal` expects. The lines
-  for ZPrime samples are commented in the code.
-- Tasks are selected with `grep '<version>'`: substring match, as in `getjobsSignal.py`.
-- A task with more than one timestamp directory (resubmitted production) is not handled:
-  the copy command breaks and the sub-directory stays empty.
+- The `signal` layout is the old one, not the one `MergeJobs.py signal` expects. The naming
+  for ZPrime samples is kept as comments in the code.
+- Tasks are selected as in `getjobsSignal.py`: exact `V<version>`, longer versions ignored.
+- A task with several timestamp directories (submitted more than once) is copied once per
+  submission, each into its own directory suffixed with `_<YYMMDD_HHMMSS>`, with a `WARNING`.
+- A summary is printed at the end, with every listing or copy that failed as `FAILED:`.
+- The datasets behind each `<dataType>` are in the `DATASETS` dictionary at the top of the
+  script.
 
 ---
 
@@ -398,12 +412,12 @@ them and change:
 |--------------------|------------------------------------------------|-----------------------------------------------------------------|
 | `ScriptWrite.sh`   | each line                                      | dCache path `.../store/user/gcoulon/HSCP/...`                   |
 | `getjobsSignal.py` | `OUTPUT_BASE_DIR` (top of file)                | `/scratch/ui3_1/gcoulon/HSCP_prod/SIGNAL/`                      |
-| `getjobsSignal.py` | `base_url` (in `main`)                         | `davs://sbgdcache.in2p3.fr/cms/phedex/store/user/gcoulon/HSCP/` |
+| `getjobsSignal.py` | `BASE_URL` (top of file)                       | `davs://sbgdcache.in2p3.fr/cms/phedex/store/user/gcoulon/HSCP/` |
 | `MergeJobs.py`     | `MODES["signal"]["base_dir"]`                  | `/scratch/ui3_1/gcoulon/HSCP_prod/SIGNAL`                       |
 | `MergeJobs.py`     | `MODES["data"]["base_dir"]`                    | `/opt/sbg/cms/ui3_data1/gcoulon/HSCP_prod`                      |
-| `transfer_prod.py` | `base_command`, `raw_command` (bottom of file) | `gfal-ls davs://.../store/user/gcoulon/HSCP/...`                |
+| `transfer_prod.py` | `BASE_URL` (top of file)                       | `davs://sbgdcache.in2p3.fr/cms/phedex/store/user/gcoulon/HSCP/` |
 
-`write_givenfile_txt.py` has no hard-coded path. `ScriptWrite.sh` and `transfer_prod.py`
+`WriteFileinTXT.py` has no hard-coded path. `ScriptWrite.sh` and `transfer_prod.py`
 write relative to the current directory.
 
 To only *read* the existing productions, nothing needs changing: use the `.txt` lists and
@@ -417,22 +431,26 @@ the `SIGNAL/V<version>/*_merged.root` files directly.
 `ScriptWrite.sh` was run with old blocks uncommented, or run twice. Delete the `.txt` and
 regenerate it.
 
-**A `.txt` has a line ending with `/` and no file name.**
-The `gfal-ls` of that line failed (proxy, path). Delete the `.txt`, fix, regenerate.
+**`ERROR: gfal-ls failed ...` or `ERROR: no .root file found ...` from `WriteFileinTXT.py`.**
+That directory was not listed (proxy, path) and nothing was written for it. The other lines
+of the block did write theirs, so delete the `.txt`, fix the cause and rerun the block.
 
-**A `.txt` has lines not ending with `.root`.**
-The dCache directory contains something else (e.g. `log/`). Remove those lines.
+**`ERROR: output directory does not exist` from `WriteFileinTXT.py`.**
+`mkdir -p` the directory of the `.txt` first.
 
-**`FileNotFoundError` from `write_givenfile_txt.py`.**
-The directory of the `.txt` does not exist: `mkdir -p` it first.
+**An older `.txt` has lines not ending with `.root`, or ending with `/`.**
+The lists written before October 2026 come from an earlier version of the script, which
+wrote every entry of the directory, and a bogus line when the listing failed. To check a
+list: `grep -v '\.root$' <list>.txt` must print nothing.
 
-**`SIGNAL/V<version>/` has fewer sub-directories than mass points.**
-A listing or a copy failed during `getjobsSignal.py`: look for `Command failed` or
-`gfal-copy failed` in its output, then rerun it.
+**`FAILED:` lines at the end of `getjobsSignal.py` or `transfer_prod.py`.**
+A listing or a copy failed (proxy, network). Delete the sub-directories concerned (files
+already present are not overwritten, so a partial copy would stay), rerun the command, then
+check that the number of sub-directories is the expected one.
 
-**`SIGNAL/V<version>/` has samples of another version.**
-Substring match on the version (`19p6` also takes `19p60`). Remove the extra sub-directories
-before merging.
+**`WARNING: ... was submitted 2 times` from `transfer_prod.py`.**
+The task has several timestamp directories on dCache. Each one was copied to its own
+directory; remove the one you do not want before merging.
 
 **`WARNING: ... all write to ..._merged.root` from `MergeJobs.py`.**
 The same sample is present twice under that version. Remove the sub-directory you do not
@@ -444,9 +462,6 @@ ROOT is not set up in the shell.
 **`Directory does not exist: /opt/sbg/cms/ui3_data1/...`.**
 `MergeJobs.py data` got a relative path, resolved against its hard-coded base. Give an
 absolute path.
-
-**`transfer_prod.py` returns at once without printing anything.**
-`<dataType>` is not one of the six known values.
 
 **`gfal-ls` / `gfal-copy` fail with Python or library errors.**
 Possible clash with a CMSSW environment: run the transfer in a shell without `cmsenv`, then
